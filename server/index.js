@@ -1,4 +1,5 @@
-const express=require("express");
+
+const express=require("express"); //tells express framework is needed
 const cors= require("cors");
 
 const app=express();
@@ -12,4 +13,4 @@ app.get("/",(req,res)=>{
 
 app.listen(5001,() =>{
   console.log("Server running on port 5001");
-});
+}); 
