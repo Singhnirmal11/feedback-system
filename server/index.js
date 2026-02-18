@@ -73,6 +73,31 @@ app.post("/login", (req, res) => {
   });
 });
 
+function verifyToken(req,res,next)
+{
+  const authHeader=req.headers["authorization"];
+
+  if(!authHeader){
+    return res.status(403).json({message:"Token Required"});
+  }
+  const token=authHeader.split(" ")[1];
+  jwt.verify(token,"secretKey",(err,decoded) =>{
+    if(err){
+      return res.status(403).json({message:"Invalid token"});
+    }
+
+    req.user=decoded;
+    next();
+  });
+}
+
+app.get("/dashboard",verifyToken,(req,res)=>{
+  res.json({
+    message:"Welcome to Dashboard",
+    user:req.user
+  });
+});
+
 
 app.listen(5001, () => {
   console.log("Server running on port 5001");
