@@ -14,6 +14,12 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
+app.get("/admin",verifyToken,verifyAdmin,(req,res) =>{
+  res.json({
+    message:"Welcome Admin"
+  });
+});
+
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -90,6 +96,13 @@ function verifyToken(req,res,next)
     req.user=decoded;
     next();
   });
+}
+
+function verifyAdmin(req,res,next){
+  if(req.user.role!="admin"){
+    return res.status(403).json({message:"Access denied. Admin only"});
+  }
+  next();
 }
 
 app.get("/dashboard",verifyToken,(req,res)=>{
