@@ -1,9 +1,10 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 const bcrypt = require("bcrypt");
-
+const SECRET_KEY = process.env.JWT_SECRET;
 const app = express();
 
 app.use(cors());
@@ -62,7 +63,7 @@ app.post("/login", (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      "secretKey",
+      SECRET_KEY,
       { expiresIn: "1h" }
     );
 
@@ -81,7 +82,7 @@ function verifyToken(req,res,next)
     return res.status(403).json({message:"Token Required"});
   }
   const token=authHeader.split(" ")[1];
-  jwt.verify(token,"secretKey",(err,decoded) =>{
+  jwt.verify(token,SECRET_KEY,(err,decoded) =>{
     if(err){
       return res.status(403).json({message:"Invalid token"});
     }
