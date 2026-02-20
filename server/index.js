@@ -105,6 +105,38 @@ function verifyAdmin(req,res,next){
   next();
 }
 
+app.post("/faculties",verifyToken,verifyAdmin,(req,res) =>{
+  const {name,department}=req.body;
+
+  if(!name || !department){
+    return res.status(400).json({message:"All fields are required"});
+  }
+
+  const query=`
+  INSERT into faculties(name,department) VALUES(?,?)`;
+
+  db.query(query,[name,department],(err,result) =>{
+    if(err){
+      return res.status(500).json({message:"Database error"});
+    }
+    
+    return res.status(201).json({message:"Faculty added successfully"});
+  });
+});
+
+
+app.get("/faculties", verifyToken, (req, res) => {
+  const query = "SELECT * FROM faculties";
+
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
 app.get("/dashboard",verifyToken,(req,res)=>{
   res.json({
     message:"Welcome to Dashboard",
