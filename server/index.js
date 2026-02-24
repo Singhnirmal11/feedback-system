@@ -141,6 +141,7 @@ app.post("/feedback",verifyToken,(req,res) =>{
   const{faculty_id,rating,comment}=req.body;
   const student_id=req.user.id;
 
+
   if(!faculty_id || !rating){
     return res.status(400).json({message:"Faculty and rating are required"});
   }
@@ -177,9 +178,41 @@ app.post("/feedback",verifyToken,(req,res) =>{
         if(err){
           return res.status(500).json({message:"Database error"});
         }
+        console.log("Comment:", req.body.comment);
 
         res.status(201).json({message:"Feedback Submitted Successfully"});
       });
+    });
+  });
+});
+
+app.get("/faculties/:id/feedback",verifyToken,(req,res) =>{
+  const faculty_id=req.params.id;
+
+  const query=`SELECT f.name ,f.department, fb.rating, fb.comment FROM feedback fb JOIN faculties f ON fb.faculty_id=f.id WHERE f.id=?`;
+  db.query(query,[faculty_id],(err,results) =>{
+
+  if(err){
+    console.log(err);
+  return res.status(500).json({message:"Database error"});
+  }
+
+  if(results.length===0){
+    return res.status(404).json({message:"Feedback not found"});
+  }
+
+  const totalRatings=results.length;
+  const averageRating= results.reduce((sum,item)=>sum+item.rating,0)/totalRatings;
+
+    res.json({
+
+      faculty:{
+        name:results[0].name,
+        department:results[0].department
+      },
+      totalFeedback:totalRatings,
+      averageFeedback:averageRating.toFixed(2),
+      feedback:results
     });
   });
 });
