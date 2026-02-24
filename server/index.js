@@ -137,6 +137,53 @@ app.get("/faculties", verifyToken, (req, res) => {
   });
 });
 
+app.post("/feedback",verifyToken,(req,res) =>{
+  const{faculty_id,rating,comment}=req.body;
+  const student_id=req.user.id;
+
+  if(!faculty_id || !rating){
+    return res.status(400).json({message:"Faculty and rating are required"});
+  }
+
+  if(rating<1 || rating>5){
+    return res.status(400).json({message:"Rating must be between 1 and 5"});
+  }
+
+  const checkFaculty="SELECT * FROM faculties WHERE id=?";
+  db.query(checkFaculty,[faculty_id],(err,facultyResult) =>{
+    if(err){
+      return res.status(500).json({message:"Database Error"});
+    }
+
+    if(facultyResult.length===0){
+      return res.status(404).json({message:"Faculty not found"});
+    }
+
+    const checkDuplicate=`SELECT * FROM feedback WHERE student_id=? AND faculty_id=?`;
+
+    db.query(checkDuplicate,[student_id,faculty_id],(err,duplicateResult) =>{
+      if(err){
+        return res.status(500).json({message:"Database error"});
+      }
+
+      if(duplicateResult.length>0){
+        return res.status(400).json({message:"You have already submitted feedback for this faculty"});
+      }
+
+      const insertQuery=`INSERT INTO feedback (student_id, faculty_id, rating, comment)
+      VALUES(?,?,?,?)`;
+
+      db.query(insertQuery,[student_id,faculty_id,rating,comment],(err,result) =>{
+        if(err){
+          return res.status(500).json({message:"Database error"});
+        }
+
+        res.status(201).json({message:"Feedback Submitted Successfully"});
+      });
+    });
+  });
+});
+
 app.get("/dashboard",verifyToken,(req,res)=>{
   res.json({
     message:"Welcome to Dashboard",
