@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-function Login({ setIsLoggedIn }){
+function Login({ setIsLoggedIn, setShowLogin }){
+ 
   const [email,setEmail]=useState("");
   const[password,setPassword]=useState("");
   
@@ -54,7 +55,13 @@ function Login({ setIsLoggedIn }){
       <br/> <br/>
       
       <button onClick={handleLogin}>Login</button>
+
+      <p>
+        Don't have an account?{" "}
+        <button onClick={() => setShowLogin(false)}>Register</button>
+      </p>
     </div>
+    
   );
 } 
 

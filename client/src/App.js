@@ -1,19 +1,25 @@
-import {useState} from "react";
+import { useState } from "react";
 import Login from "./components/Login";
+import Register from "./components/Register";
 import FacultyList from "./components/FacultyList";
 
 function App() {
-  const[isLoggedIn,setIsLoggedIn] =useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
 
-  return(
+  return (
     <div>
-      <h1>Feedback System</h1>
+      <h1>Feedback System..</h1>
 
-    {!isLoggedIn ?(
-      <Login setIsLoggedIn ={setIsLoggedIn} />
-    ) : (
-      <FacultyList />
-    )}
+      {!isLoggedIn ? (
+        showLogin ? (
+          <Login setIsLoggedIn={setIsLoggedIn} setShowLogin={setShowLogin} />
+        ) : (
+          <Register setShowLogin={setShowLogin} />
+        )
+      ) : (
+        <FacultyList />
+      )}
     </div>
   );
 }
