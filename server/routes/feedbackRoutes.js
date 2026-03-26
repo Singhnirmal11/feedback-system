@@ -1,8 +1,10 @@
+
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 
 const verifyToken = require("../middleware/verifyToken");
+
 
 
 
@@ -14,8 +16,8 @@ router.post("/feedback", verifyToken, (req, res) => {
     return res.status(400).json({ message: "Faculty and rating are required" });
   }
 
-  if (rating < 1 || rating > 5) {
-    return res.status(400).json({ message: "Rating must be between 1 and 5" });
+  if (rating < 0 || rating > 5) {
+    return res.status(400).json({ message: "Rating must be between 0 and 5" });
   }
 
   const checkFaculty = "SELECT * FROM faculties WHERE id = ?";
@@ -100,5 +102,6 @@ router.get("/faculties/:id/feedback", verifyToken, (req, res) => {
     });
   });
 });
+
 
 module.exports = router;

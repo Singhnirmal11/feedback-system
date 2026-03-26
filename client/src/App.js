@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./App.css";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import FacultyList from "./components/FacultyList";
@@ -8,17 +9,33 @@ function App() {
   const [showLogin, setShowLogin] = useState(true);
 
   return (
-    <div>
-      <h1>Feedback System..</h1>
+    <div className="app-container">
+      <h1 className="main-heading">University Faculty Feedback System </h1>
 
       {!isLoggedIn ? (
         showLogin ? (
-          <Login setIsLoggedIn={setIsLoggedIn} setShowLogin={setShowLogin} />
+          <div className="card">
+            <Login setIsLoggedIn={setIsLoggedIn} setShowLogin={setShowLogin} />
+          </div>
         ) : (
-          <Register setShowLogin={setShowLogin} />
+          <div className="card">
+            <Register setShowLogin={setShowLogin} />
+          </div>
         )
       ) : (
-        <FacultyList />
+        <div className="card">
+          <button
+            className="logout-btn"
+            onClick={() => {
+              localStorage.removeItem("token");
+              setIsLoggedIn(false);
+            }}
+          >
+            Logout
+          </button>
+
+          <FacultyList />
+        </div>
       )}
     </div>
   );

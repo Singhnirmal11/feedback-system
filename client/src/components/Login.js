@@ -1,50 +1,46 @@
 import { useState } from "react";
 
-function Login({ setIsLoggedIn, setShowLogin }){
- 
-  const [email,setEmail]=useState("");
-  const[password,setPassword]=useState("");
-  
-  const handleLogin=async() =>{
+function Login({ setIsLoggedIn, setShowLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    try{
-      const response =await fetch ("http://localhost:5001/login",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
-        body:JSON.stringify({
-          email:email,
-          password:password
+        body: JSON.stringify({
+          email: email,
+          password: password
         })
       });
 
-      const data=await response.json();
-      console.log(data);  
+      const data = await response.json();
 
-      if(response.ok){
-        alert("Login Successful");
-        localStorage.setItem("token",data.token);
+      if (response.ok) {
+        alert("Login successful..");
+        localStorage.setItem("token", data.token);
         setIsLoggedIn(true);
-      }else{
+      } else {
         alert(data.message);
       }
-    }
 
-    catch(error){
-      console.error("Error:", error); 
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
-  return(
+
+  return (
     <div>
       <h2>Login</h2>
+
       <input
         type="email"
         placeholder="Enter email"
         onChange={(e) => setEmail(e.target.value)}
       />
-
-      <br/> <br/>
 
       <input
         type="password"
@@ -52,8 +48,6 @@ function Login({ setIsLoggedIn, setShowLogin }){
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <br/> <br/>
-      
       <button onClick={handleLogin}>Login</button>
 
       <p>
@@ -61,8 +55,7 @@ function Login({ setIsLoggedIn, setShowLogin }){
         <button onClick={() => setShowLogin(false)}>Register</button>
       </p>
     </div>
-    
   );
-} 
+}
 
 export default Login;

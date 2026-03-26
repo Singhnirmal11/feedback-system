@@ -43,23 +43,17 @@ function Register({ setShowLogin }) {
         onChange={(e) => setName(e.target.value)}
       />
 
-      <br /><br />
-
       <input
         type="email"
         placeholder="Enter email"
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <br /><br />
-
       <input
         type="password"
         placeholder="Enter password"
         onChange={(e) => setPassword(e.target.value)}
       />
-
-      <br /><br />
 
       <button onClick={handleRegister}>Register</button>
 
