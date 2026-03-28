@@ -42,7 +42,6 @@ app.put("/feedback/:id", verifyToken, (req, res) => {
   const { rating, comment } = req.body;
   const student_id = req.user.id;
 
-  // Validation
   if (!rating) {
     return res.status(400).json({ message: "Rating is required" });
   }
@@ -51,27 +50,27 @@ app.put("/feedback/:id", verifyToken, (req, res) => {
     return res.status(400).json({ message: "Rating must be between 1 and 5" });
   }
 
-  // Check ownership
   const checkQuery = "SELECT * FROM feedback WHERE id=? AND student_id=?";
-  
+
   db.query(checkQuery, [feedbackId, student_id], (err, result) => {
     if (err) {
+      console.log(err);
       return res.status(500).json({ message: "Database error" });
     }
 
     if (result.length === 0) {
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ message: "Unauthorized or feedback not found" });
     }
 
-    // Update query
     const updateQuery = `
-      UPDATE feedback 
-      SET rating=?, comment=? 
+      UPDATE feedback
+      SET rating=?, comment=?
       WHERE id=?
     `;
 
     db.query(updateQuery, [rating, comment, feedbackId], (err, result) => {
       if (err) {
+        console.log(err);
         return res.status(500).json({ message: "Database error" });
       }
 
@@ -88,17 +87,19 @@ app.delete("/feedback/:id", verifyToken, (req, res) => {
 
   db.query(checkQuery, [feedbackId, student_id], (err, result) => {
     if (err) {
+      console.log(err);
       return res.status(500).json({ message: "Database error" });
     }
 
     if (result.length === 0) {
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ message: "Unauthorized or feedback not found" });
     }
 
     const deleteQuery = "DELETE FROM feedback WHERE id=?";
 
     db.query(deleteQuery, [feedbackId], (err, result) => {
       if (err) {
+        console.log(err);
         return res.status(500).json({ message: "Database error" });
       }
 

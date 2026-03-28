@@ -10,6 +10,7 @@ function FacultyList() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [designationFilter, setDesignationFilter] = useState("All");
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchFaculties();
@@ -29,7 +30,7 @@ function FacultyList() {
       const data = await response.json();
       setFaculties(data);
     } catch (error) {
-      console.error("Error fetching faculties:", error);
+      console.error(error);
     }
   };
 
@@ -37,8 +38,14 @@ function FacultyList() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5001/feedback", {
-        method: "POST",
+      const url = editingId
+        ? `http://localhost:5001/feedback/${editingId}`
+        : "http://localhost:5001/feedback";
+
+      const method = editingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + token,
@@ -53,15 +60,16 @@ function FacultyList() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Feedback Submitted ✅");
+        alert(editingId ? "Updated successfully" : "Feedback submitted");
         setRating("");
         setComment("");
+        setEditingId(null);
         fetchFeedback(selectedFaculty.id);
       } else {
         alert(data.message);
       }
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      console.error(error);
     }
   };
 
@@ -83,7 +91,6 @@ function FacultyList() {
       );
 
       const data = await response.json();
-      console.log("Feedback API Response:", data);
 
       if (response.ok) {
         setFacultyFeedback(data);
@@ -91,11 +98,47 @@ function FacultyList() {
         alert(data.message);
       }
     } catch (error) {
-      console.error("Fetch feedback error:", error);
-      alert("Unable to fetch feedback");
+      console.error(error);
+      alert("Error fetching feedback");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure?");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:5001/feedback/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Deleted successfully");
+        fetchFeedback(selectedFaculty.id);
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEdit = (item) => {
+    setRating(item.rating);
+    setComment(item.comment);
+    setEditingId(item.id);
   };
 
   const filteredFaculties = faculties.filter((faculty) => {
@@ -106,7 +149,9 @@ function FacultyList() {
 
     const matchesDesignation =
       designationFilter === "All" ||
-      faculty.designation?.toLowerCase().includes(designationFilter.toLowerCase());
+      faculty.designation
+        ?.toLowerCase()
+        .includes(designationFilter.toLowerCase());
 
     return matchesSearch && matchesDesignation;
   });
@@ -131,8 +176,12 @@ function FacultyList() {
         >
           <option value="All">All Designations</option>
           <option value="Professor">Professor</option>
-          <option value="Associate Professor">Associate Professor</option>
-          <option value="Assistant Professor">Assistant Professor</option>
+          <option value="Associate Professor">
+            Associate Professor
+          </option>
+          <option value="Assistant Professor">
+            Assistant Professor
+          </option>
         </select>
       </div>
 
@@ -140,97 +189,107 @@ function FacultyList() {
         <b>Total Faculties Found:</b> {filteredFaculties.length}
       </p>
 
-      {filteredFaculties.map((faculty) => (
-        <div className="faculty-card" key={faculty.id}>
-          <h3>{faculty.name}</h3>
-          <div className="designation-badge">
-            {faculty.designation}
-          </div>
-          <p><b>Department:</b> {faculty.department}</p>
-          <p><b>Email:</b> {faculty.email}</p>
-          <p><b>Mobile:</b> {faculty.mobile_no}</p>
+      <div className="faculty-grid">
+        {filteredFaculties.map((faculty) => (
+          <div className="faculty-card" key={faculty.id}>
+            <h3>{faculty.name}</h3>
 
-          <button
-            onClick={() => {
-              setSelectedFaculty(faculty);
-              setFacultyFeedback(null);
-            }}
-          >
-            Give Feedback
-          </button>
-
-          <button
-            onClick={() => {
-              setSelectedFaculty(faculty);
-              fetchFeedback(faculty.id);
-            }}
-          >
-            View Feedback
-          </button>
-
-          {selectedFaculty?.id === faculty.id && (
-            <div className="feedback-box">
-              <h3>Feedback for {selectedFaculty.name}</h3>
-
-              <input
-                type="number"
-                placeholder="Rating (1-5)"
-                value={rating}
-                min="1"
-                max="5"
-                step="1"
-                onChange={(e) => {
-                  let value = e.target.value;
-
-                  if (value === "") {
-                    setRating("");
-                    return;
-                  }
-
-                  value = Number(value);
-
-                  if (value >= 1 && value <= 5) {
-                    setRating(value);
-                  }
-                }}
-              />
-
-              <input
-                type="text"
-                placeholder="Comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-
-              <button onClick={handleSubmit}>Submit Feedback</button>
+            <div className="designation-badge">
+              {faculty.designation}
             </div>
-          )}
 
-          {loading && selectedFaculty?.id === faculty.id && (
-            <p className="loading-text">Loading feedback...</p>
-          )}
+            <p>
+              <b>Department:</b> {faculty.department}
+            </p>
+            <p>
+              <b>Email:</b> {faculty.email}
+            </p>
+            <p>
+              <b>Mobile:</b> {faculty.mobile_no}
+            </p>
 
-          {facultyFeedback && selectedFaculty?.id === faculty.id && (
-            <div className="feedback-display">
-              <h3>Feedback for {facultyFeedback?.faculty?.name}</h3>
-              <p><b>Department:</b> {facultyFeedback?.faculty?.department}</p>
-              <p><b>Average Rating:</b> {facultyFeedback?.averageFeedback}</p>
-              <p><b>Total Feedback:</b> {facultyFeedback?.totalFeedback}</p>
+            <button
+              onClick={() => {
+                setSelectedFaculty(faculty);
+                setFacultyFeedback(null);
+              }}
+            >
+              Give Feedback
+            </button>
 
-              {facultyFeedback?.feedback?.length > 0 ? (
-                facultyFeedback.feedback.map((item, index) => (
-                  <div className="feedback-item" key={index}>
-                    <p><b>Rating:</b> {item.rating} ⭐</p>
-                    <p><b>Comment:</b> {item.comment}</p>
+            <button
+              onClick={() => {
+                setSelectedFaculty(faculty);
+                fetchFeedback(faculty.id);
+              }}
+            >
+              View Feedback
+            </button>
+
+            {selectedFaculty?.id === faculty.id && (
+              <div className="feedback-box">
+                <h3>Feedback for {selectedFaculty.name}</h3>
+
+                <input
+                  type="number"
+                  placeholder="Rating (1-5)"
+                  value={rating}
+                  min="1"
+                  max="5"
+                  onChange={(e) => setRating(e.target.value)}
+                />
+
+                <input
+                  type="text"
+                  placeholder="Comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+
+                <button onClick={handleSubmit}>
+                  {editingId ? "Update Feedback" : "Submit Feedback"}
+                </button>
+              </div>
+            )}
+
+            {loading && selectedFaculty?.id === faculty.id && (
+              <p className="loading-text">Loading...</p>
+            )}
+
+            {facultyFeedback && selectedFaculty?.id === faculty.id && (
+              <div className="feedback-display">
+                <h3>{facultyFeedback.faculty.name}</h3>
+                <p>
+                  <b>Average Rating:</b>{" "}
+                  {facultyFeedback.averageFeedback}
+                </p>
+                <p>
+                  <b>Total Feedback:</b>{" "}
+                  {facultyFeedback.totalFeedback}
+                </p>
+
+                {facultyFeedback.feedback.map((item) => (
+                  <div className="feedback-item" key={item.id}>
+                    <p>
+                      <b>Rating:</b> {item.rating} ⭐
+                    </p>
+                    <p>
+                      <b>Comment:</b> {item.comment}
+                    </p>
+
+                    <button onClick={() => handleEdit(item)}>
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(item.id)}>
+                      Delete
+                    </button>
                   </div>
-                ))
-              ) : (
-                <p>No feedback available yet.</p>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

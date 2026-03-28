@@ -67,7 +67,7 @@ router.get("/faculties/:id/feedback", verifyToken, (req, res) => {
   const faculty_id = req.params.id;
 
   const query = `
-    SELECT f.name, f.department, fb.rating, fb.comment
+    SELECT fb.id, f.name, f.department, fb.rating, fb.comment
     FROM feedback fb
     JOIN faculties f ON fb.faculty_id = f.id
     WHERE f.id = ?
